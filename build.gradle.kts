@@ -7,12 +7,13 @@ version = "1.0"
 
 repositories {
     jcenter()
+    mavenCentral()
 }
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("com.github.ajalt:clikt:2.6.0")
-    implementation("net.dv8tion:JDA:4.1.1_141")
+    implementation("com.github.ajalt.clikt:clikt:3.1.0")
+    implementation("net.dv8tion:JDA:4.2.0_247")
 
     runtimeOnly("org.slf4j:slf4j-simple:1.7.25")
 }
