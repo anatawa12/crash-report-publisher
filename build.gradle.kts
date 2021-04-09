@@ -1,21 +1,19 @@
 plugins {
     kotlin("jvm") version "1.3.72"
+    id("com.github.johnrengelman.shadow") version "6.1.0"
 }
 
 group = "com.anatawa12.crashReportPublisher"
 version = "1.1"
 
 repositories {
-    jcenter()
     mavenCentral()
+    maven(url = "https://libraries.minecraft.net/")
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-    implementation("com.github.ajalt.clikt:clikt:3.1.0")
-    implementation("net.dv8tion:JDA:4.2.0_247")
-
-    runtimeOnly("org.slf4j:slf4j-simple:1.7.25")
+    implementation(kotlin("stdlib"))
+    shadow("net.minecraft:launchwrapper:1.12")
 }
 
 tasks {
@@ -27,17 +25,18 @@ tasks {
         kotlinOptions.jvmTarget = "1.8"
     }
 
-    processResources {
-        into("runtime-libs") {
-            from(configurations.runtimeClasspath) {
-                include("**/*.jar")
-            }
-        }
-    }
-
     jar {
         manifest {
-            attributes("Main-Class" to "RuntimeLibsLauncher")
+            attributes("TweakClass" to "com.anatawa12.crashReportPublisher.CrashReportPublisherTweaker")
+            attributes("TweakOrder" to "1000")
         }
+        enabled = false
+        dependsOn(shadowJar.get())
+    }
+
+    shadowJar {
+        archiveClassifier.set("")
+        val basePkg = "com.anatawa12.crashReportPublisher.libs"
+        relocate("kotlin.", "$basePkg.kotlin.")
     }
 }
