@@ -18,6 +18,7 @@ public class CrashReportPublisherClassTransformer implements IClassTransformer {
         new MethodNode(ASM4);
         try {
             Field apiField = MethodVisitor.class.getDeclaredField("api");
+            apiField.setAccessible(true);
             int api = (int) (Integer) apiField.get(new MethodNode());
             if (api == ASM4) {
                 ASM4OR5 = ASM4;
