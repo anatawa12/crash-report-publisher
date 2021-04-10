@@ -1,14 +1,34 @@
-Crash Report Publisher (for discord)
+Crash Report Publisher
 ===
 
-Publishes the newest crash report of minecraft to discord.
+Publishes the crash report of minecraft to some chat tools.
 
-# How to use
+### Supported versions
 
-exclude this command when crashes minecraft at game directory.
+Minecraft since 1.6.4 until 1.12.2 with MinecraftForge.
 
-```
-java -jar <path to jar> --api-token '<discord api token>' --channel <channel id>
-```
+<details>
+<summary>Why since 1.6.4 until 1.12.2</summary>
 
-There's no way to change text of the message.
+the versions which
+
+- Launched with [launch wrapper](https://github.com/Mojang/LegacyLauncher)
+- FML has ITweaker loader with `TweakClass` Manifest
+- FML has ITweaker sorting configuration with `TweakOrder` Manifest
+
+</details>
+
+### How to use
+
+1. Download the latest jar from [releases]
+1. Add into `mods` directory
+1. Create `crash-report-publisher.properties` in `config` directory like shown below
+   ```properties
+   service-kind=discord
+   hook-url=<webhook url>
+   ```
+
+   You can get webhook url from `integrations` in channel settings or server settings.
+1. Now you can get and see the crash report on Discord.
+
+[releases]: https://github.com/anatawa12/crash-report-publisher/releases/latest
