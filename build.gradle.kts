@@ -40,7 +40,7 @@ tasks {
     jar {
         manifest {
             attributes("TweakClass" to "com.anatawa12.crashReportPublisher.CrashReportPublisherTweaker")
-            attributes("TweakOrder" to "1000")
+            attributes("TweakOrder" to "1001")
         }
         enabled = false
     }
