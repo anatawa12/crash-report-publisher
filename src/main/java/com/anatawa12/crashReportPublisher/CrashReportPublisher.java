@@ -1,18 +1,22 @@
 package com.anatawa12.crashReportPublisher;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Properties;
@@ -66,6 +70,17 @@ public final class CrashReportPublisher {
         }
     }
 
+    public static String toUnsignedString(long i) {
+        if (i >= 0) {
+            return Long.toString(i);
+        } else {
+            // quot = i / 10
+            long quot = (i >>> 1) / 5;
+            long rem = i - quot * 10;
+            return Long.toString(quot) + rem;
+        }
+    }
+
     public static String escapeStr(String s) {
         StringBuilder builder = new StringBuilder();
         int start = 0;
@@ -90,6 +105,28 @@ public final class CrashReportPublisher {
     }
 
     private static final char[] hexChars = "0123456789abcdef".toCharArray();
+
+    public static String readToString(InputStream inputStream) throws IOException {
+        StringWriter writer = new StringWriter();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(inputStream)));
+
+        char[] buffer = new char[8 * 1024];
+        int chars = reader.read(buffer);
+        while (chars >= 0) {
+            writer.write(buffer, 0, chars);
+            chars = reader.read(buffer);
+        }
+
+        return writer.toString();
+    }
+
+    public static InputStream getIS(HttpURLConnection conn) {
+        try {
+            return conn.getInputStream();
+        } catch (IOException ignored) {
+            return conn.getErrorStream();
+        }
+    }
 }
 
 interface IMessageSender {
@@ -105,36 +142,41 @@ final class DiscordSender implements IMessageSender {
 
     @Override
     public void report(String name, String body) throws Throwable {
-        CloseableHttpClient httpClient = HttpClients.createDefault();
+        HttpURLConnection conn = (HttpURLConnection) hookUrl.toURL().openConnection();
         try {
-            HttpPost uploadFile = new HttpPost(hookUrl);
+            HttpEntity entity = MultipartEntityBuilder.create()
+                    .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+                    .addTextBody("payload_json",
+                            "{\"content\":\"" + CrashReportPublisher.escapeStr("Crash Report $name") + "\"}",
+                            ContentType.TEXT_PLAIN
+                    )
+                    .addBinaryBody(
+                            "file",
+                            body.getBytes(UTF_8),
+                            ContentType.TEXT_PLAIN,
+                            name
+                    )
+                    .build();
 
-            uploadFile.setEntity(
-                    MultipartEntityBuilder.create()
-                            .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
-                            .addTextBody("payload_json",
-                                    "{\"content\":\"" + CrashReportPublisher.escapeStr("Crash Report $name") + "\"}",
-                                    ContentType.TEXT_PLAIN
-                            )
-                            .addBinaryBody(
-                                    "file",
-                                    body.getBytes(UTF_8),
-                                    ContentType.TEXT_PLAIN,
-                                    name
-                            )
-                            .build()
-            );
+            conn.setDoOutput(true);  //POST可能にする
+            conn.setRequestMethod("POST");
 
-            CloseableHttpResponse response = httpClient.execute(uploadFile);
+            conn.setRequestProperty("Content-Type", entity.getContentType().getValue());
+            conn.setRequestProperty("User-Agent", "CrashReportPublisher/2.0");
+
+            conn.connect();
+
+            BufferedOutputStream out = new BufferedOutputStream(conn.getOutputStream());
             try {
-                if (response.getStatusLine().getStatusCode() < 200 ||  299 < response.getStatusLine().getStatusCode())
-                    throw new IllegalStateException("failed to upload: " + response.getStatusLine().getStatusCode() + ": "
-                            + hookUrl + "\n" + response);
+                entity.writeTo(out);
             } finally {
-                response.close();
+                out.close();
             }
+            if (conn.getResponseCode() < 200 || 299 < conn.getResponseCode())
+                throw new IllegalStateException("failed to upload: " + conn.getResponseCode() + ": " + hookUrl + "\n"
+                        + CrashReportPublisher.readToString(CrashReportPublisher.getIS(conn)));
         } finally {
-            httpClient.close();
+            conn.disconnect();
         }
     }
 
