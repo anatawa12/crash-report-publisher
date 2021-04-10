@@ -2,8 +2,37 @@ package com.anatawa12.crashReportPublisher;
 
 import net.minecraft.launchwrapper.IClassTransformer;
 import org.objectweb.asm.*;
+import org.objectweb.asm.tree.MethodNode;
+
+import java.lang.reflect.Field;
 
 public class CrashReportPublisherClassTransformer implements IClassTransformer {
+    @SuppressWarnings("PointlessBitwiseExpression")
+    private static int ASM4 = 4 << 16 | 0 << 8 | 0;
+    @SuppressWarnings("PointlessBitwiseExpression")
+    private static int ASM5 = 5 << 16 | 0 << 8 | 0;
+    static int ASM4OR5;
+
+    static {
+        // check ASM4 is supported
+        new MethodNode(ASM4);
+        try {
+            Field apiField = MethodVisitor.class.getDeclaredField("api");
+            int api = (int) (Integer) apiField.get(new MethodNode());
+            if (api == ASM4) {
+                ASM4OR5 = ASM4;
+            } else {
+                // is asm4 is supported and current version is not asm4, this means asm 5 or later.
+                // so use ASM5
+                ASM4OR5 = ASM5;
+            }
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
         if (!"net.minecraft.crash.CrashReport".equals(transformedName)) return basicClass;
@@ -19,7 +48,7 @@ public class CrashReportPublisherClassTransformer implements IClassTransformer {
 
     static class ClassTransformer extends ClassVisitor {
         ClassTransformer (ClassVisitor cv) {
-            super(Opcodes.ASM5, cv);
+            super(ASM4OR5, cv);
         }
 
         @Override
@@ -38,7 +67,7 @@ public class CrashReportPublisherClassTransformer implements IClassTransformer {
         final boolean isObf;
 
         MethodTransformer(MethodVisitor mv, boolean isObf) {
-            super(Opcodes.ASM5, mv);
+            super(ASM4OR5, mv);
             this.isObf = isObf;
         }
 
@@ -62,15 +91,13 @@ public class CrashReportPublisherClassTransformer implements IClassTransformer {
                 Opcodes.INVOKEVIRTUAL,
                 "net/minecraft/crash/CrashReport",
                 obf("func_71502_e", "getCompleteReport"),
-                "()Ljava/lang/String;",
-                false
+                "()Ljava/lang/String;"
             );
             visitMethodInsn(
                 Opcodes.INVOKESTATIC,
                 "com/anatawa12/crashReportPublisher/CrashReportPublisher",
                 "onSaveToFile",
-                "(Ljava/io/File;Ljava/io/File;Ljava/lang/String;)V",
-                false
+                "(Ljava/io/File;Ljava/io/File;Ljava/lang/String;)V"
             );
         }
 

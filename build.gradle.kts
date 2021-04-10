@@ -28,7 +28,7 @@ dependencies {
     merges("org.apache.httpcomponents:httpclient:4.3.3")
     merges("org.apache.httpcomponents:httpmime:4.3.3")
     implementation("net.minecraft:launchwrapper:1.12")
-    implementation("org.ow2.asm:asm:5.0")
+    implementation("org.ow2.asm:asm:4.0")
 }
 
 java {
