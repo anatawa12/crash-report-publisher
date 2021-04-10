@@ -147,7 +147,7 @@ final class DiscordSender implements IMessageSender {
             HttpEntity entity = MultipartEntityBuilder.create()
                     .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
                     .addTextBody("payload_json",
-                            "{\"content\":\"" + CrashReportPublisher.escapeStr("Crash Report $name") + "\"}",
+                            "{\"content\":\"" + CrashReportPublisher.escapeStr("Crash Report " + name) + "\"}",
                             ContentType.TEXT_PLAIN
                     )
                     .addBinaryBody(
