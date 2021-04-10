@@ -12,7 +12,6 @@ import java.io.File
 import java.io.IOException
 import java.net.URI
 import java.util.*
-import java.util.function.Supplier
 
 
 @Suppress("unused")
@@ -29,9 +28,6 @@ class CrashReportPublisherTweaker : ITweaker {
             propsFile.reader().use { props.load(it) }
         } catch (e: IOException) {
             e.printStackTrace()
-        }
-        if (kotlin.runCatching { Class.forName("java.util.function.Supplier") }.isFailure) {
-            error("java 8 is required for crash-report-publisher")
         }
         val service = props.getConfig("service-kind")
         reporter = when (service) {
@@ -57,10 +53,10 @@ class CrashReportPublisherTweaker : ITweaker {
         var reporter: IMessageSender? = null
 
         @JvmStatic
-        fun onSaveToFile(crashReportFile: File?, toFile: File, bodyGetter: Supplier<String>) {
+        fun onSaveToFile(crashReportFile: File?, toFile: File, body: String) {
             if (crashReportFile != null) return
             try {
-                reporter?.report(toFile.name, bodyGetter.get())
+                reporter?.report(toFile.name, body)
             } catch (throwable: Throwable) {
                 LOGGER.error("Could not send crash report to {}", reporter, throwable)
             }

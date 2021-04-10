@@ -51,31 +51,18 @@ class CrashReportPublisherClassTransformer : IClassTransformer {
             )
             visitVarInsn(Opcodes.ALOAD, 1)
             visitVarInsn(Opcodes.ALOAD, 0)
-            visitInvokeDynamicInsn(
-                "get",
-                "(Lnet/minecraft/crash/CrashReport;)Ljava/util/function/Supplier;",
-                Handle(
-                    Opcodes.H_INVOKESTATIC,
-                    "java/lang/invoke/LambdaMetafactory",
-                    "metafactory",
-                    "(Ljava/lang/invoke/MethodHandles\$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;L" +
-                            "java/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;" +
-                            ")Ljava/lang/invoke/CallSite;",
-                ),
-                Type.getType("()Ljava/lang/Object;"),
-                Handle(
-                    Opcodes.H_INVOKEVIRTUAL,
-                    "net/minecraft/crash/CrashReport",
-                    obf("func_71502_e", "getCompleteReport"),
-                    "()Ljava/lang/String;",
-                ),
-                Type.getType("()Ljava/lang/String;"),
+            visitMethodInsn(
+                Opcodes.INVOKEVIRTUAL,
+                "net/minecraft/crash/CrashReport",
+                obf("func_71502_e", "getCompleteReport"),
+                "()Ljava/lang/String;",
+                false,
             )
             visitMethodInsn(
                 Opcodes.INVOKESTATIC,
                 "com/anatawa12/crashReportPublisher/CrashReportPublisherTweaker",
                 "onSaveToFile",
-                "(Ljava/io/File;Ljava/io/File;Ljava/util/function/Supplier;)V",
+                "(Ljava/io/File;Ljava/io/File;Ljava/lang/String;)V",
                 false,
             )
         }
