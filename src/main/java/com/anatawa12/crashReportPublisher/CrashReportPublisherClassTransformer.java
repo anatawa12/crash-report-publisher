@@ -3,7 +3,7 @@ package com.anatawa12.crashReportPublisher;
 import net.minecraft.launchwrapper.IClassTransformer;
 import org.objectweb.asm.*;
 
-class CrashReportPublisherClassTransformer implements IClassTransformer {
+public class CrashReportPublisherClassTransformer implements IClassTransformer {
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
         if (!"net.minecraft.crash.CrashReport".equals(transformedName)) return basicClass;
