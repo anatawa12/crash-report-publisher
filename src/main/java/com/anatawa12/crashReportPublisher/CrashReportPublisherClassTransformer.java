@@ -67,7 +67,7 @@ public class CrashReportPublisherClassTransformer implements IClassTransformer {
             );
             visitMethodInsn(
                 Opcodes.INVOKESTATIC,
-                "com/anatawa12/crashReportPublisher/CrashReportPublisherTweaker",
+                "com/anatawa12/crashReportPublisher/CrashReportPublisher",
                 "onSaveToFile",
                 "(Ljava/io/File;Ljava/io/File;Ljava/lang/String;)V",
                 false
