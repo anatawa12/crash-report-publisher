@@ -31,7 +31,7 @@ the versions which
    hook-url=<webhook url>
    ```
 
-   You can get webhook url from `integrations` in channel settings or server settings.
+   You can get webhook url from integrations in channel settings or server settings.
 1. Now you can get and see the crash report on Discord.
 
 [releases]: https://github.com/anatawa12/crash-report-publisher/releases/latest
