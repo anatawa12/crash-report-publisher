@@ -23,6 +23,9 @@ the versions which
 1. Download the latest jar from [releases]
 1. Add into `mods` directory
 1. Create `crash-report-publisher.properties` in `config` directory like shown below
+   
+   **IMPORTANT: This mod does not generates empty config file, please create yourself**
+
    ```properties
    service-kind=discord
    hook-url=<webhook url>
